@@ -1,0 +1,20 @@
+@import "materialize/sass/materialize";
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #121212;
+  color: $secondary-color;
+}
+
+.center {
+  position: fixed;
+  top: 40%;
+  left: 45%;
+}
+
+.small-size {
+  width: 20%
+}

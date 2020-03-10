@@ -1,0 +1,23 @@
+doctype html
+html
+    include components
+    title= 'Tachiyomi Sync'
+    head
+        script(src='./scripts/jquery-3.4.1.min.js')
+        link(rel='stylesheet', href='https://fonts.googleapis.com/icon?family=Material+Icons')
+        link(rel='stylesheet', href='https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap')
+        link(rel='stylesheet', type='text/css', href='./index.css')
+        script(src='./materialize/js/bin/materialize.min.js')
+        if categories.length > 0
+            script(type='text/javascript').
+                const categories = !{JSON.stringify(categories)}
+        else
+            script(type='text/javascript').
+                const categories = null
+        script(src='./scripts/index.js')
+    body
+        - const hasData = categories != null && categories.length > 0
+        #stub(hidden=hasData)
+            h1='NO DATA!'
+
+        +tabs(categories, hasData)

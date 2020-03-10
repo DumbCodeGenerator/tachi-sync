@@ -1,0 +1,39 @@
+doctype html
+html(lang="ru")
+    include components
+    title= title
+    head
+        link(rel='stylesheet', href='https://fonts.googleapis.com/icon?family=Material+Icons')
+        link(rel='stylesheet', href='https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap')
+        link(rel='stylesheet', type='text/css', href='../viewer.css')
+        script(src='../scripts/jquery-3.4.1.min.js')
+        script(src='../materialize/js/bin/materialize.min.js')
+        script(src='../scripts/lazyload.js')
+        if chapters
+            script(type='text/javascript').
+                const chapters = !{JSON.stringify(chapters)}
+        else
+            script(type='text/javascript').
+                const chapters = null
+        script(src='../scripts/viewer.js')
+    body
+        - const hasData = chapters != null && chapters.length > 0
+        #stub(hidden=hasData)
+            h1='NO DATA!'
+
+        +spinner(hasData)
+
+        #header.row(hidden=!hasData)
+            div(class='input-field col m4')
+                select(id='selector')
+                    if hasData
+                        each item, index in chapters
+                            option(value=index)= item.name
+        #viewer(hidden=!hasData)
+        .footer
+            #number.left
+            .right
+                a#prevChap.btn-flat.waves-effect.waves-light.hidden(style='margin-right: 5px;' onclick='prevChapter()' title='Предыдущая глава')
+                    i.material-icons(style='color: #fff; height: 100%; font-size: 2em;') arrow_back
+                a#nextChap.btn-flat.waves-effect.waves-light(onclick='nextChapter()' title='Следующая глава')
+                    i.material-icons(style='color: #fff; height: 100%; font-size: 2em;') arrow_forward

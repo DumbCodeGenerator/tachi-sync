@@ -1,0 +1,4 @@
+# Project exclude paths
+/node_modules/
+/app/sqlite/db/
+/app/gd-api/token.json

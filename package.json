@@ -1,0 +1,35 @@
+{
+  "name": "tachi-sync",
+  "version": "1.1.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "better-sqlite3": "^6.0.1",
+    "body-parser": "latest",
+    "cloudscraper": "^4.6.0",
+    "connect-sqlite3": "^0.9.11",
+    "cookie-parser": "^1.4.4",
+    "cors": "^2.8.5",
+    "crypto-js": "^4.0.0",
+    "dom-parser": "^0.1.6",
+    "express": "^4.17.1",
+    "express-session": "^1.17.0",
+    "fs": "0.0.1-security",
+    "googleapis": "^39.2.0",
+    "image-cache": "^1.0.1",
+    "js-base64": "^2.5.2",
+    "json5": "^2.1.1",
+    "node-fetch": "^2.6.0",
+    "passport": "^0.4.1",
+    "passport-local": "^1.0.0",
+    "pug": "^2.0.4",
+    "request": "^2.88.2",
+    "sse-nodejs": "^0.1.0"
+  }
+}

@@ -1,0 +1,31 @@
+mixin spinner(active)
+    .preloader-wrapper.big(class={active: active})
+        .spinner-layer
+            .circle-clipper.left
+                .circle
+            .gap-patch
+                .circle
+            .circle-clipper.right
+                .circle
+
+mixin tabs(categories, hasData)
+    ul.tabs(hidden=!hasData)
+        each val, index in categories
+            li.tab
+                a(href=`#tab-${index}`)= val.category
+    each val, index in categories
+        +grid(val.mangas, index)
+
+
+mixin grid(mangas, index)
+    div(id=`tab-${index}`, style="padding: 10px;")
+        .row
+            each val in mangas
+                .col.l2.m6(onclick=`openInNewTab("viewer/${val.id}")`)
+                    +card-image(val.name, val.thumbnail)
+
+mixin card-image(title, url)
+    .card
+        .card-image
+            img(data-src=url)
+            span.card-title=title
