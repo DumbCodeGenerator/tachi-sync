@@ -28,6 +28,7 @@ async function parseGrouple(url) {
 async function parseMangaLib(url) {
     let response = await fetch(url, {headers: {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.122 Safari/537.36'}});
     let htmlString = await response.text();
+    console.log(htmlString);
     let imgServers = ["https://img2.mangalib.me", "https://img3.mangalib.me"];
     let html = parser.parseFromString(htmlString);
     let pagesBase64 = html.getElementsByClassName("pp")[0].innerHTML.replace("<!-- ", "").replace(" -->", "");
