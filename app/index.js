@@ -39,7 +39,7 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 app.use((req, res, next) => {
-    if (!db.isReady() && req.path !== '/gd/token') {
+    if (!db.isReady() && req.path !== '/gd/token' && req.path !== '/login') {
         if (gdAPI.hasTokenFile())
             return res.send('База данных ещё не готова для использования. Обновите страницу позже.');
         else

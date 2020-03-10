@@ -7,7 +7,7 @@ function authenticationMiddleware() {
 
         // if they aren't redirect them to the home page
         if (req.path !== '/login')
-            res.redirect('/login');
+            return res.redirect('/login');
         next();
     }
 }
