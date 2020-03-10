@@ -1,8 +1,13 @@
 const passport = require('passport');
+const fs = require('fs');
 const cloudscraper = require('cloudscraper');
 const imageCache = require('image-cache');
 const mangaParser = require('../parsing');
 const db = require('../sqlite');
+const {google} = require('googleapis');
+const gdAPI = require('../gd-api');
+
+let oAuth2Client;
 
 
 function initPCRoutes(app, sendToSSE) {
@@ -33,6 +38,32 @@ function initPCRoutes(app, sendToSSE) {
         successRedirect: '/',
         failureRedirect: '/login'
     }));
+
+    app.get('/gd/token', (req, res) => {
+        fs.readFile('./app/gd-api/credentials.json', (err, content) => {
+            if (err) return console.log('Error loading client secret file:', err);
+            const {client_secret, client_id, redirect_uris} = JSON.parse(content).installed;
+            oAuth2Client = new google.auth.OAuth2(
+                client_id, client_secret, redirect_uris[0]);
+
+            const authUrl = oAuth2Client.generateAuthUrl({
+                access_type: 'offline',
+                scope: gdAPI.SCOPES,
+            });
+
+            res.send(authUrl);
+        });
+    });
+
+    app.post('/gd/token', (req, res) => {
+        const code = req.body;
+        gdAPI.saveAccessToken(oAuth2Client, code).then((auth) => {
+            db.checkDB(auth);
+        }).catch((err) => {
+            console.error(err);
+        });
+        res.sendStatus(200);
+    });
 
     app.get('/db/backup', (req, res) => {
         db.backup();

@@ -6,29 +6,30 @@ const {google} = require('googleapis');
 const SCOPES = ['https://www.googleapis.com/auth/drive'];
 const TOKEN_PATH = path.resolve(__dirname, 'token.json');
 const DB_FILE_ID = '1wz4jp6oyZtwOLK7NkSGvTtK0qa8AXrZn';
+const CREDENTIALS_PATH = path.resolve(__dirname, 'credentials.json');
+const credentials = JSON.parse(fs.readFileSync(CREDENTIALS_PATH, {encoding: 'utf8'}));
 
 function useAPI(callback) {
-    fs.readFile(path.resolve(__dirname, 'credentials.json'), (err, content) => {
+    fs.readFile(CREDENTIALS_PATH, (err, content) => {
         if (err) return console.log('Error loading client secret file:', err);
         // Authorize a client with credentials, then call the Google Drive API.
-        authorize(JSON.parse(content), callback);
+        authorize(callback);
     });
 }
 
 /**
  * Create an OAuth2 client with the given credentials, and then execute the
  * given callback function.
- * @param {Object} credentials The authorization client credentials.
  * @param {function} callback The callback to call with the authorized client.
  */
-function authorize(credentials, callback) {
+function authorize(callback) {
     const {client_secret, client_id, redirect_uris} = credentials.installed;
     const oAuth2Client = new google.auth.OAuth2(
         client_id, client_secret, redirect_uris[0]);
 
     // Check if we have previously stored a token.
     fs.readFile(TOKEN_PATH, (err, token) => {
-        if (err) return getAccessToken(oAuth2Client, callback);
+        if (err) return console.log('Нет файла токена. Перейдите на /gd/token, чтобы его инициализировать');
         oAuth2Client.setCredentials(JSON.parse(token));
         callback(oAuth2Client);
     });
@@ -65,7 +66,24 @@ function getAccessToken(oAuth2Client, callback) {
     });
 }
 
+function saveAccessToken(oAuth2Client, code) {
+    return new Promise((resolve, reject) => {
+        oAuth2Client.getToken(code, (err, token) => {
+            if (err) return reject(err);
+            // Store the token to disk for later program executions
+            fs.writeFile(TOKEN_PATH, JSON.stringify(token), (err) => {
+                if (err) return reject(err);
+                oAuth2Client.setCredentials(token);
+                resolve(oAuth2Client);
+            });
+        });
+    });
+}
+
 module.exports = {
     DB_FILE_ID: DB_FILE_ID,
-    useAPI: useAPI
+    useAPI: useAPI,
+    saveAccessToken: saveAccessToken,
+    SCOPES: SCOPES,
+    TOKEN_PATH: TOKEN_PATH
 };

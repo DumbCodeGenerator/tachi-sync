@@ -23,27 +23,40 @@ const createChaptersSQL = `CREATE TABLE IF NOT EXISTS ${chaptersTableName}(id in
 if (!fs.existsSync(parent))
     fs.mkdirSync(parent);
 
-if (!fs.existsSync(dbPath)) {
-    console.log('DB not found!');
+function checkDB(auth) {
+    if (!fs.existsSync(dbPath)) {
+        console.log('DB not found!');
+        if (auth)
+            getDBWithoutToken(auth);
+        else
+            getDBWithToken();
+    } else {
+        Database.db = new Database(dbPath, {verbose: console.log});
+        initDB();
+    }
+}
+
+function getDBWithToken() {
     gdAPI.useAPI((auth) => {
-        const drive = google.drive({version: 'v3', auth});
-        const writeStream = fs.createWriteStream(dbPath);
-        drive.files.get({fileId: gdAPI.DB_FILE_ID, alt: 'media'}, {
-            // Make sure we get the binary data
-            responseType: 'stream'
-        }, (err, res) => {
-            if (err) return console.log('The API returned an error: ' + err);
-            res.data.on('end', function () {
-                writeStream.close();
-                console.log('DB downloaded');
-                Database.db = new Database(dbPath, {verbose: console.log});
-                initDB();
-            }).pipe(writeStream);
-        });
+        getDBWithoutToken(auth);
     });
-} else {
-    Database.db = new Database(dbPath, {verbose: console.log});
-    initDB();
+}
+
+function getDBWithoutToken(auth) {
+    const drive = google.drive({version: 'v3', auth});
+    const writeStream = fs.createWriteStream(dbPath);
+    drive.files.get({fileId: gdAPI.DB_FILE_ID, alt: 'media'}, {
+        // Make sure we get the binary data
+        responseType: 'stream'
+    }, (err, res) => {
+        if (err) return console.log('The API returned an error: ' + err);
+        res.data.on('end', function () {
+            writeStream.close();
+            console.log('DB downloaded');
+            Database.db = new Database(dbPath, {verbose: console.log});
+            initDB();
+        }).pipe(writeStream);
+    });
 }
 
 function prepare(statement) {
@@ -179,8 +192,10 @@ function initDB() {
     Database.prepare = prepare;
     Database.backup = backupDB;
 
-    setInterval(backupDB, 60 * 60 * 1000)
+    setInterval(backupDB, 60 * 60 * 1000);
 }
 
 module.exports = Database;
+module.exports.checkDB = checkDB;
+module.exports.dbPath = dbPath;
 

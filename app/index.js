@@ -9,6 +9,7 @@ const SQLiteStore = require('connect-sqlite3')(session);
 const imageCache = require('image-cache');
 const db = require('./sqlite');
 const path = require('path');
+const gdAPI = require('./gd-api');
 
 const sessionsPath = path.resolve(__dirname, 'sqlite/db');
 
@@ -18,9 +19,14 @@ const app = express();
 
 require('./auth').init();
 
+if (fs.existsSync(gdAPI.TOKEN_PATH) || fs.existsSync(db.dbPath)) {
+    db.checkDB();
+}
+
 app.set('view engine', 'pug');
 app.use(express.static('public', {extensions: ['html']}));
 app.use(cors());
+app.use(bodyParser.text());
 app.use(bodyParser.json({limit: '50mb'}));
 app.use(bodyParser.urlencoded({extended: false}));
 
