@@ -1,5 +1,4 @@
 const express = require('express');
-const fs = require('fs');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const SSE = require('sse-nodejs');
@@ -19,8 +18,8 @@ const app = express();
 
 require('./auth').init();
 
-if (fs.existsSync(gdAPI.TOKEN_PATH) || fs.existsSync(db.dbPath)) {
-    db.checkDB();
+if (gdAPI.hasTokenFile() || db.hasDBFile()) {
+    db.checkDB().catch((err) => console.error(err));
 }
 
 app.set('view engine', 'pug');
@@ -39,6 +38,15 @@ app.use(session({
 }));
 app.use(passport.initialize());
 app.use(passport.session());
+app.use((req, res, next) => {
+    if (!db.isReady() && req.path !== '/gd/token') {
+        if (gdAPI.hasTokenFile())
+            return res.send('База данных ещё не готова для использования. Обновите страницу позже.');
+        else
+            return res.redirect('/gd/token');
+    }
+    next();
+});
 
 app.get('/sync/mobile', function (req, res) {
     const toUpdate = db.getToUpdate();
@@ -102,4 +110,3 @@ app.all('*', function (req, res) {
 });
 
 module.exports = app;
-module.exports.db = db;

@@ -1,9 +1,12 @@
 const app = require('./app');
+const db = require('./app/sqlite');
 
 function exitHandler() {
-    const toUpdate = app.db.getToUpdate();
-    if (toUpdate.length){
-        fs.writeFileSync(app.db.getUpdatePath(), JSON5.stringify(toUpdate), 'utf8');
+    if (!db.isReady()) return;
+
+    const toUpdate = db.getToUpdate();
+    if (toUpdate.length) {
+        fs.writeFileSync(db.updatePath, JSON5.stringify(toUpdate), 'utf8');
     }
 }
 
