@@ -1,5 +1,7 @@
 const app = require('./app');
 const db = require('./app/sqlite');
+const fs = require('fs');
+const JSON5 = require('json5');
 
 function exitHandler() {
     if (!db.isReady()) return;

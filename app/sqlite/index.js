@@ -107,17 +107,16 @@ function clearToUpdate() {
     }
 }
 
-const deleteChapter = prepare(`DELETE FROM ${chaptersTableName} WHERE id=@id`);
+function deleteChapter(jsonData) {
+    prepare(`DELETE FROM ${chaptersTableName} WHERE id=@id`).run(jsonData);
+}
 
 function deleteChapters(ids) {
     transaction((ids) => {
         for (const id of ids)
-            deleteChapter.run({id: id})
-    }).call(ids);
+            prepare(`DELETE FROM ${chaptersTableName} WHERE id=@id`).run({id: id})
+    })(ids);
 }
-
-const deleteManga = prepare(`DELETE FROM ${mangasTableName} WHERE id=@id`);
-const deleteMangaChapters = prepare(`DELETE FROM ${chaptersTableName} WHERE manga_id=@id`);
 
 function deleteMangas(mangas) {
     transaction((mangas) => {
@@ -127,34 +126,27 @@ function deleteMangas(mangas) {
             if (thumbnail && imageCache.isCachedSync(thumbnail)) {
                 imageCache.delCache(thumbnail);
             }
-            deleteManga.run(obj);
-            deleteMangaChapters.run(obj);
+            prepare(`DELETE FROM ${mangasTableName} WHERE id=@id`).run(obj);
+            prepare(`DELETE FROM ${chaptersTableName} WHERE manga_id=@id`).run(obj);
         }
-    }).call(mangas);
+    })(mangas);
 }
-
-
-const insertCategory = prepare(`INSERT INTO ${categoryTableName} VALUES(@id, @name)`);
 
 function insertCategories(categories) {
     transaction((categories) => {
         for (const category of categories) {
-            insertCategory.run(category);
+            prepare(`INSERT INTO ${categoryTableName} VALUES(@id, @name)`).run(category);
         }
-    }).call(categories);
+    })(categories);
 }
-
-const insertManga = prepare(`INSERT OR REPLACE INTO ${mangasTableName} VALUES(@id, @name, @thumbnail, @category_id)`);
 
 function insertMangas(mangas) {
     transaction((mangas) => {
         for (const manga of mangas) {
-            insertManga.run(manga);
+            prepare(`INSERT OR REPLACE INTO ${mangasTableName} VALUES(@id, @name, @thumbnail, @category_id)`).run(manga);
         }
-    }).call(mangas);
+    })(mangas);
 }
-
-const insertChapter = prepare(`INSERT OR REPLACE INTO ${chaptersTableName} VALUES(@id, @name, @url, @page, @read, @order, @manga_id)`);
 
 function insertChapters(chapters) {
     transaction((chapters) => {
@@ -163,9 +155,9 @@ function insertChapters(chapters) {
                 chapter.page = 1;
             if (!chapter.read)
                 chapter.read = 0;
-            insertChapter.run(chapter);
+            prepare(`INSERT OR REPLACE INTO ${chaptersTableName} VALUES(@id, @name, @url, @page, @read, @order, @manga_id)`).run(chapter);
         }
-    }).call(chapters);
+    })(chapters);
 }
 
 function clearDB() {
@@ -214,11 +206,8 @@ module.exports = {
     categoryTableName: categoryTableName,
     mangasTableName: mangasTableName,
     chaptersTableName: chaptersTableName,
-    insertCategory: insertCategory,
     insertCategories: insertCategories,
-    insertManga: insertManga,
     insertMangas: insertMangas,
-    insertChapter: insertChapter,
     insertChapters: insertChapters,
     deleteMangas: deleteMangas,
     deleteChapter: deleteChapter,
@@ -231,6 +220,6 @@ module.exports = {
     clearToUpdate: clearToUpdate,
     clear: clearDB,
     prepare: prepare,
-    backup: backupDB,
+    backup: backupDB
 };
 

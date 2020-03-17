@@ -64,7 +64,7 @@ function initPCRoutes(app, sendToSSE) {
     app.patch('/sync', (req, res) => {
         const jsonData = req.body;
 
-        db.deleteChapter.run(jsonData);
+        db.deleteChapter(jsonData);
 
         sendToSSE(jsonData);
 
