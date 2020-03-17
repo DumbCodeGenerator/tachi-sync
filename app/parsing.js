@@ -3,6 +3,7 @@ const DomParser = require('dom-parser');
 const parser = new DomParser();
 const Base64 = require('js-base64').Base64;
 const fetch = require('node-fetch');
+const cloudscraper = require('cloudscraper');
 
 async function parseGrouple(url) {
     if (url.hostname === "mintmanga.live")
