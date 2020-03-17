@@ -52,7 +52,8 @@ function parse(url) {
     $('#header').fadeIn();
     $(".wrap").remove();
     showLoading();
-    fetch("/parse/" + encodeURIComponent(url)).then(response => response.json()).then(data => {
+    const promise = url.includes('mangalib.me') ? window.parseMangaLib(url) : fetch("/parse/" + encodeURIComponent(url)).then(response => response.json());
+    promise.then(data => {
         //data = JSON.parse(data);
         let servers = null;
         let links;
@@ -134,7 +135,7 @@ function parse(url) {
         if (forceScroll) {
             $(".wrap").get(page - 1).scrollIntoView();
         }
-    });
+    }).catch(err => console.error(err));
 }
 
 function isElementInViewport (el) {

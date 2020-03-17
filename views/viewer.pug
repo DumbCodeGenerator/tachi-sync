@@ -3,6 +3,7 @@ html(lang="ru")
     include components
     title= title
     head
+        meta(name='referrer' content="no-referrer")
         link(rel='stylesheet', href='https://fonts.googleapis.com/icon?family=Material+Icons')
         link(rel='stylesheet', href='https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap')
         link(rel='stylesheet', type='text/css', href='../dark.css')
@@ -12,7 +13,7 @@ html(lang="ru")
         script(src='../scripts/lazyload.js')
         if chapters
             script(type='text/javascript').
-                const chapters = !{JSON.stringify(chapters)}
+                const chapters = !{JSON.stringify(chapters)};
         else
             script(type='text/javascript').
                 const chapters = null

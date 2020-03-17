@@ -1,5 +1,5 @@
 const fs = require('fs');
-const imageCache = require('image-cache');
+const imageCache = require('../image-cache');
 const JSON5 = require('json5');
 const path = require('path');
 const {google} = require('googleapis');
@@ -79,7 +79,7 @@ function prepare(statement) {
 
 function transaction(fn) {
     if (isReady)
-        return Database.db.transaction(fn)
+        return Database.db.transaction(fn);
 }
 
 function backupDB() {
@@ -108,58 +108,74 @@ function clearToUpdate() {
 }
 
 const deleteChapter = prepare(`DELETE FROM ${chaptersTableName} WHERE id=@id`);
-const deleteChapters = transaction((ids) => {
-    for (const id of ids)
-        deleteChapter.run({id: id})
-});
+
+function deleteChapters(ids) {
+    transaction((ids) => {
+        for (const id of ids)
+            deleteChapter.run({id: id})
+    }).call(ids);
+}
 
 const deleteManga = prepare(`DELETE FROM ${mangasTableName} WHERE id=@id`);
 const deleteMangaChapters = prepare(`DELETE FROM ${chaptersTableName} WHERE manga_id=@id`);
-const deleteMangas = transaction((mangas) => {
-    for (const id of mangas) {
-        const obj = {id: id};
-        const thumbnail = prepare(`SELECT thumbnail FROM ${mangasTableName} WHERE id=@id`).get(obj).thumbnail;
-        if (thumbnail && imageCache.isCachedSync(thumbnail)) {
-            imageCache.delCache(thumbnail);
+
+function deleteMangas(mangas) {
+    transaction((mangas) => {
+        for (const id of mangas) {
+            const obj = {id: id};
+            const thumbnail = prepare(`SELECT thumbnail FROM ${mangasTableName} WHERE id=@id`).get(obj).thumbnail;
+            if (thumbnail && imageCache.isCachedSync(thumbnail)) {
+                imageCache.delCache(thumbnail);
+            }
+            deleteManga.run(obj);
+            deleteMangaChapters.run(obj);
         }
-        deleteManga.run(obj);
-        deleteMangaChapters.run(obj);
-    }
-});
+    }).call(mangas);
+}
 
 
 const insertCategory = prepare(`INSERT INTO ${categoryTableName} VALUES(@id, @name)`);
-const insertCategories = transaction((categories) => {
-    for (const category of categories) {
-        insertCategory.run(category);
-    }
-});
+
+function insertCategories(categories) {
+    transaction((categories) => {
+        for (const category of categories) {
+            insertCategory.run(category);
+        }
+    }).call(categories);
+}
 
 const insertManga = prepare(`INSERT OR REPLACE INTO ${mangasTableName} VALUES(@id, @name, @thumbnail, @category_id)`);
-const insertMangas = transaction((mangas) => {
-    for (const manga of mangas) {
-        insertManga.run(manga);
-    }
-});
+
+function insertMangas(mangas) {
+    transaction((mangas) => {
+        for (const manga of mangas) {
+            insertManga.run(manga);
+        }
+    }).call(mangas);
+}
 
 const insertChapter = prepare(`INSERT OR REPLACE INTO ${chaptersTableName} VALUES(@id, @name, @url, @page, @read, @order, @manga_id)`);
-const insertChapters = transaction((chapters) => {
-    for (const chapter of chapters) {
-        if (!chapter.page)
-            chapter.page = 1;
-        if (!chapter.read)
-            chapter.read = 0;
-        insertChapter.run(chapter);
-    }
-});
 
-const clearDB = transaction(() => {
-    const tables = [categoryTableName, mangasTableName, chaptersTableName];
-    for (const table of tables) {
-        if (tables.hasOwnProperty(table))
+function insertChapters(chapters) {
+    transaction((chapters) => {
+        for (const chapter of chapters) {
+            if (!chapter.page)
+                chapter.page = 1;
+            if (!chapter.read)
+                chapter.read = 0;
+            insertChapter.run(chapter);
+        }
+    }).call(chapters);
+}
+
+function clearDB() {
+    transaction(function () {
+        const tables = [categoryTableName, mangasTableName, chaptersTableName];
+        for (const table of tables) {
             prepare(`DELETE FROM ${table}`).run();
-    }
-});
+        }
+    }).call();
+}
 
 function initDB() {
     if (!fs.existsSync('./data'))
@@ -177,6 +193,11 @@ function initDB() {
 
     isReady = true;
 
+    if (Database.db.pragma('auto_vacuum', {simple: true}) !== 1) {
+        Database.db.pragma('auto_vacuum = 1');
+        prepare('VACUUM;').run();
+    }
+
     prepare(createCategorySQL).run();
     prepare(createMangasSQL).run();
     prepare(createChaptersSQL).run();
@@ -184,7 +205,6 @@ function initDB() {
     setInterval(backupDB, 60 * 60 * 1000);
 }
 
-//module.exports = Database;
 module.exports = {
     isReady: function () {
         return isReady

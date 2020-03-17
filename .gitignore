@@ -2,3 +2,4 @@
 /node_modules/
 /app/sqlite/db/
 /app/gd-api/token.json
+/app/image-cache/cache/

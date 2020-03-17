@@ -1,6 +1,6 @@
 const passport = require('passport');
 const cloudscraper = require('cloudscraper');
-const imageCache = require('image-cache');
+const imageCache = require('../image-cache');
 const mangaParser = require('../parsing');
 const db = require('../sqlite');
 const gdAPI = require('../gd-api');
@@ -77,10 +77,10 @@ function initPCRoutes(app, sendToSSE) {
             mangaParser.parseGrouple(parseUrl).then(data => {
                 res.send(data);
             })
-        } else if (parseUrl.hostname.includes("mangalib")) {
-            mangaParser.parseMangaLib(parseUrl).then(data => {
-                res.send(data);
-            });
+            /*} else if (parseUrl.hostname.includes("mangalib")) {
+                mangaParser.parseMangaLib(parseUrl).then(data => {
+                    res.send(data);
+                });*/
         } else if (parseUrl.hostname === "kissmanga.com") {
             mangaParser.parseKissmanga(parseUrl).then(data => {
                 res.send(data);
