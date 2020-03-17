@@ -52,8 +52,7 @@ function parse(url) {
     $('#header').fadeIn();
     $(".wrap").remove();
     showLoading();
-    const promise = url.includes('mangalib.me') ? window.parseMangaLib(url) : fetch("/parse/" + encodeURIComponent(url)).then(response => response.json());
-    promise.then(data => {
+    window.getLinks(url).then(data => {
         //data = JSON.parse(data);
         let servers = null;
         let links;

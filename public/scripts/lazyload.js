@@ -109,16 +109,28 @@
                     if (entry.isIntersecting) {
                         self.observer.unobserve(entry.target);
                         let src = entry.target.getAttribute(self.settings.src);
-                        let srcset = entry.target.getAttribute(self.settings.srcset);
-                        if ("img" === entry.target.tagName.toLowerCase()) {
-                            if (src) {
-                                entry.target.src = src;
-                            }
-                            if (srcset) {
-                                entry.target.srcset = srcset;
-                            }
+
+                        if (src.endsWith('html')) {
+                            window.unwrapNine(src).then(image => {
+                                src = image;
+                                ready();
+                            })
                         } else {
-                            entry.target.style.backgroundImage = "url(" + src + ")";
+                            ready();
+                        }
+
+                        function ready() {
+                            let srcset = entry.target.getAttribute(self.settings.srcset);
+                            if ("img" === entry.target.tagName.toLowerCase()) {
+                                if (src) {
+                                    entry.target.src = src;
+                                }
+                                if (srcset) {
+                                    entry.target.srcset = srcset;
+                                }
+                            } else {
+                                entry.target.style.backgroundImage = "url(" + src + ")";
+                            }
                         }
                     }
                 });
